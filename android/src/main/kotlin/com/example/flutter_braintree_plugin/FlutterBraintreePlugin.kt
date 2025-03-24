@@ -1,13 +1,22 @@
 package com.example.flutter_braintree_plugin
 
-import androidx.annotation.NonNull
-
+import android.content.Context
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import com.braintreepayments.api.BraintreeClient
+import com.braintreepayments.api.PayPalCheckoutRequest
+import com.braintreepayments.api.PayPalClient
+import com.braintreepayments.api.PayPalLineItem
+import com.braintreepayments.api.PayPalPaymentIntent
+import com.braintreepayments.api.PayPalRequest
+import com.braintreepayments.api.PayPalVaultRequest
+import com.braintreepayments.api.PostalAddress
 
+import com.example.flutter_braintree_plugin.FlutterBraintreePluginHelper
+import java.util.ArrayList
 
 /** FlutterBraintreePlugin */
 class FlutterBraintreePlugin: FlutterPlugin, MethodCallHandler {
@@ -16,8 +25,10 @@ class FlutterBraintreePlugin: FlutterPlugin, MethodCallHandler {
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
   /// when the Flutter Engine is detached from the Activity
   private lateinit var channel : MethodChannel
+  private var context: Context? = null
 
   override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    context = flutterPluginBinding.applicationContext
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "flutter_braintree_plugin")
     channel.setMethodCallHandler(this)
   }
@@ -28,7 +39,7 @@ class FlutterBraintreePlugin: FlutterPlugin, MethodCallHandler {
       FlutterBraintreePluginHelper.returnAuthorizationMissingError(result)
       return
     }
-    val apiClient = BTAPIClient(authorization)
+    val apiClient = context?.let { BraintreeClient(it, authorization) }
     if (apiClient == null) {
       FlutterBraintreePluginHelper.returnAuthorizationMissingError(result)
       return
@@ -108,8 +119,8 @@ class FlutterBraintreePlugin: FlutterPlugin, MethodCallHandler {
     }
   }
 
-  private fun tokenizePayPalAccount(call: MethodCall, apiClient: BTAPIClient, result: Result) {
-    val driver = BTPayPalDriver(apiClient)
+  private fun tokenizePayPalAccount(call: MethodCall, apiClient: BraintreeClient, result: Result) {
+    val driver = PayPalClient(apiClient)
 
     val requestInfo = FlutterBraintreePluginHelper.dict("request", call) ?: run {
       FlutterBraintreePluginHelper.returnFlutterError(result, "-1", "Missing request parameters")
@@ -121,31 +132,33 @@ class FlutterBraintreePlugin: FlutterPlugin, MethodCallHandler {
       return
     }
 
-    val paypalRequest:BTPayPalRequest;
+    val paypalRequest:PayPalRequest
     if (vault) {
-      val paypalVaultRequest = BTPayPalVaultRequest()
+      val paypalVaultRequest = PayPalVaultRequest(true)
       val offerCredit = requestInfo["offerCredit"] as? Boolean
-      offerCredit?.let { paypalVaultRequest.offerCredit = it }
+      if (offerCredit != null) {
+        paypalVaultRequest.shouldOfferCredit = offerCredit
+      }
       paypalRequest = paypalVaultRequest
     } else {
       val amount = requestInfo["amount"] as? String ?: "0"
-      val paypalCheckoutRequest = BTPayPalCheckoutRequest(amount)
+      val paypalCheckoutRequest = PayPalCheckoutRequest(amount, true)
       paypalCheckoutRequest.currencyCode = requestInfo["currencyCode"] as? String
       val intent = requestInfo["intent"] as? Int
       when (intent) {
-        1 -> paypalCheckoutRequest.intent = BTPayPalRequestIntent.sale
-        2 -> paypalCheckoutRequest.intent = BTPayPalRequestIntent.order
-        else -> paypalCheckoutRequest.intent = BTPayPalRequestIntent.authorize
+        1 -> paypalCheckoutRequest.intent = PayPalPaymentIntent.SALE
+        2 -> paypalCheckoutRequest.intent = PayPalPaymentIntent.ORDER
+        else -> paypalCheckoutRequest.intent = PayPalPaymentIntent.AUTHORIZE
       }
       val userAction = requestInfo["userAction"] as? Int
       when (userAction) {
-        1 -> paypalCheckoutRequest.userAction = BTPayPalRequestUserAction.commit
-        else -> paypalCheckoutRequest.userAction = BTPayPalRequestUserAction.default
+        1 -> paypalCheckoutRequest.userAction = PayPalCheckoutRequest.USER_ACTION_COMMIT
+        else -> paypalCheckoutRequest.userAction = PayPalCheckoutRequest.USER_ACTION_DEFAULT
       }
       val requestBillingAgreement = requestInfo["requestBillingAgreement"] as? Boolean
-      requestBillingAgreement?.let { paypalCheckoutRequest.requestBillingAgreement = it }
+      requestBillingAgreement?.let { paypalCheckoutRequest.shouldRequestBillingAgreement = it }
       val offerPayLater = requestInfo["offerPayLater"] as? Boolean
-      offerPayLater?.let { paypalCheckoutRequest.offerPayLater = it }
+      offerPayLater?.let { paypalCheckoutRequest.shouldOfferPayLater = it }
       paypalRequest = paypalCheckoutRequest
     }
 
@@ -156,27 +169,41 @@ class FlutterBraintreePlugin: FlutterPlugin, MethodCallHandler {
     billingAgreementDescription?.let { paypalRequest.billingAgreementDescription = it }
     val shippingAddressOverride = requestInfo["shippingAddressOverride"] as? Map<String, Any>
     shippingAddressOverride?.let {
-      val address = BTPostalAddress()
+      val address = PostalAddress()
+        address.recipientName = it["recipientName"] as? String
+        address.streetAddress = it["streetAddress"] as? String
+        address.extendedAddress = it["extendedAddress"] as? String
+        address.locality = it["locality"] as? String
+        address.region = it["region"] as? String
+        address.postalCode = it["postalCode"] as? String
+        address.countryCodeAlpha2 = it["countryCodeAlpha2"] as? String
+        paypalRequest.shippingAddressOverride = address
     }
     val shippingAddressEditable = requestInfo["shippingAddressEditable"] as? Boolean
     shippingAddressEditable?.let { paypalRequest.isShippingAddressEditable = it }
     val localeCode = requestInfo["localeCode"] as? String
     localeCode?.let { paypalRequest.localeCode = it }
     val merchantAccountID = requestInfo["merchantAccountID"] as? String
-    merchantAccountID?.let { paypalRequest.merchantAccountID = it }
+    merchantAccountID?.let { paypalRequest.merchantAccountId = it }
     val riskCorrelationId = requestInfo["riskCorrelationId"] as? String
     riskCorrelationId?.let { paypalRequest.riskCorrelationId = it }
 
     val landingPageType = requestInfo["landingPageType"] as? Int
     when (landingPageType) {
-      1 -> paypalRequest.landingPageType = BTPayPalRequestLandingPageType.login
-      2 -> paypalRequest.landingPageType = BTPayPalRequestLandingPageType.billing
-      else -> paypalRequest.landingPageType = BTPayPalRequestLandingPageType.default
+      1 -> paypalRequest.landingPageType = PayPalRequest.LANDING_PAGE_TYPE_LOGIN
+      2 -> paypalRequest.landingPageType = PayPalRequest.LANDING_PAGE_TYPE_BILLING
+      else -> paypalRequest.landingPageType = PayPalRequest.LANDING_PAGE_TYPE_LOGIN
     }
 
     val lineItems = requestInfo["lineItems"] as? List<Any>
-    lineItems?.let { paypalRequest.lineItems = FlutterBraintreePluginHelper.makePayPalItems(it) }
+    lineItems?.let {
+      val items = FlutterBraintreePluginHelper.makePayPalItems(it)
+      if (items != null) {
+        paypalRequest.setLineItems(items)
+      }
+    }
 
+    driver.tokenizePayPalAccount()
     driver.tokenizePayPalAccount(paypalRequest) { nonce, error in
       guard error == nil else {
         result(mapOf(
@@ -258,6 +285,7 @@ class FlutterBraintreePlugin: FlutterPlugin, MethodCallHandler {
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+    context = null
     channel.setMethodCallHandler(null)
   }
 }
