@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:flutter_braintree_plugin/flutter_braintree_plugin.dart';
+
+import 'package:flutter_braintree_plugin/flutter_braintree_platfrom.dart';
 
 void main() {
   runApp(const MyApp());
@@ -46,5 +47,38 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
     );
+  }
+
+  void test() {
+    // This is a test method
+
+    final token = "";
+    final request = BTPayPalCheckoutRequest(
+      amount: "10.00",
+      displayName: "Example Company",
+      billingAgreementDescription: "Your agreement description",
+      shippingAddressRequired: true,
+      shippingAddressEditable: false,
+      shippingAddressOverride: BTPostalAddress(
+        recipientName: "Brian Gecko",
+        streetAddress: "1234 Elm St.",
+        extendedAddress: "4th Floor",
+        locality: "Chicago",
+        region: "IL",
+        postalCode: "60654",
+        countryCodeAlpha2: "US",
+      ),
+    );
+
+    try {
+      final result = FlutterBraintree.tokenizePayPalAccount(token, request);
+      if (result != null) {
+        // Success
+      } else {
+        // Error
+      }
+    } catch (e) {
+      // Error
+    }
   }
 }
