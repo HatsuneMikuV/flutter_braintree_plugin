@@ -16,7 +16,7 @@ A new Flutter project.
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
   s.dependency 'Braintree', '5.27.0'
-  s.dependency 'Braintree/PayPalNativeCheckout'
+#   s.dependency 'Braintree/PayPalNativeCheckout'
   s.dependency 'Braintree/Venmo'
   s.platform = :ios, '13.0'
 

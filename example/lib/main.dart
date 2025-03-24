@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:flutter_braintree_plugin/flutter_braintree_platfrom.dart';
+import 'package:flutter_braintree_plugin/flutter_braintree_platform.dart';
 
 void main() {
   runApp(const MyApp());
