@@ -49,11 +49,6 @@ android {
         minSdk = 21
     }
 
-    dependencies {
-        testImplementation("org.jetbrains.kotlin:kotlin-test")
-        testImplementation("org.mockito:mockito-core:5.0.0")
-    }
-
     testOptions {
         unitTests.all {
             useJUnitPlatform()
@@ -65,4 +60,10 @@ android {
             }
         }
     }
+}
+
+dependencies {
+    implementation 'com.braintreepayments.api:paypal:4.49.1'
+    implementation 'com.braintreepayments.api:venmo:4.49.1'
+    implementation 'com.braintreepayments.api:paypalnativecheckout:4.49.1'
 }

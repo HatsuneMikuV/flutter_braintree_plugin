@@ -53,7 +53,7 @@ class FlutterBraintreePluginHelper {
       dict["payerID"] = paypalNonce.payerID
       dict["billingAddress"] = buildPostalAddressDict(address: paypalNonce.billingAddress)
       dict["shippingAddress"] = buildPostalAddressDict(address: paypalNonce.shippingAddress)
-      dict["creditFinancing"] = buildPayPalCreditFinancingDict(finacing: paypalNonce.creditFinancing)
+      dict["creditFinancing"] = buildPayPalCreditFinancingDict(financing: paypalNonce.creditFinancing)
     }
     if let venmoNonce = nonce as? BTVenmoAccountNonce {
       dict["email"] = venmoNonce.email

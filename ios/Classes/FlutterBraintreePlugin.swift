@@ -23,10 +23,7 @@ public class FlutterBraintreePlugin: NSObject, FlutterPlugin {
       return
     }
     
-
     switch call.method {
-    case "tokenizeNativePayPalAccount":
-      tokenizeNativePayPalAccount(call, apiClient: apiClient, result: result)
     case "tokenizePayPalAccount":
       tokenizePayPalAccount(call, apiClient: apiClient, result: result)
     case "tokenizeVenmoAccount":
@@ -50,118 +47,6 @@ public class FlutterBraintreePlugin: NSObject, FlutterPlugin {
     }
   }
   
-  private func tokenizeNativePayPalAccount(_ call: FlutterMethodCall, apiClient: BTAPIClient, result: @escaping FlutterResult) {
-    let payPalNativeCheckoutClient = BTPayPalNativeCheckoutClient(apiClient: apiClient)
-    
-    guard let requestInfo = FlutterBraintreePluginHelper.dict(for: "request", in: call) else {
-      FlutterBraintreePluginHelper.returnFlutterError(result: result, code: "-1", message: "Missing request parameters")
-      return
-    }
-    
-    guard let vault = requestInfo["vault"] as? Bool else {
-      FlutterBraintreePluginHelper.returnFlutterError(result: result, code: "-1", message: "Missing request parameters")
-      return
-    }
-    
-    var paypalRequest:BTPayPalNativeRequest;
-    if vault {
-      let paypalVaultRequest = BTPayPalNativeVaultRequest()
-      if let offerCredit = requestInfo["offerCredit"] as? Bool {
-        paypalVaultRequest.offerCredit = offerCredit
-      }
-      if let billingAgreementDescription = requestInfo["billingAgreementDescription"] as? String {
-        paypalVaultRequest.billingAgreementDescription = billingAgreementDescription
-      }
-      paypalRequest = paypalVaultRequest
-    } else {
-      let amount = requestInfo["amount"] as? String ?? "0"
-      let paypalCheckoutRequest = BTPayPalNativeCheckoutRequest(amount: amount)
-      paypalCheckoutRequest.currencyCode = requestInfo["currencyCode"] as? String
-      if let intent = requestInfo["intent"] as? Int {
-        switch intent {
-        case 1:
-          paypalCheckoutRequest.intent = BTPayPalNativeRequestIntent.sale
-        case 2:
-          paypalCheckoutRequest.intent = BTPayPalNativeRequestIntent.order
-        default:
-          paypalCheckoutRequest.intent = BTPayPalNativeRequestIntent.authorize
-        }
-      }
-      if let offerPayLater = requestInfo["offerPayLater"] as? Bool {
-        paypalCheckoutRequest.offerPayLater = offerPayLater
-      }
-      if let requestBillingAgreement = requestInfo["requestBillingAgreement"] as? Bool {
-        paypalCheckoutRequest.requestBillingAgreement = requestBillingAgreement
-      }
-      if let billingAgreementDescription = requestInfo["billingAgreementDescription"] as? String {
-        paypalCheckoutRequest.billingAgreementDescription = billingAgreementDescription
-      }
-      paypalRequest = paypalCheckoutRequest
-    }
-    
-    if let lineItems = requestInfo["lineItems"] as? [Any] {
-      paypalRequest.lineItems = FlutterBraintreePluginHelper.makePayPalItems(from: lineItems)
-    }
-    if let shippingAddressRequired = requestInfo["shippingAddressRequired"] as? Bool {
-      paypalRequest.isShippingAddressRequired = shippingAddressRequired
-    }
-    paypalRequest.displayName = requestInfo["displayName"] as? String
-    if let localeCode = requestInfo["localeCode"] as? String {
-      paypalRequest.localeCode = localeCode
-    }
-    if let shippingAddressEditable = requestInfo["shippingAddressEditable"] as? Bool {
-      paypalRequest.isShippingAddressEditable = shippingAddressEditable
-    }
-    if let shippingAddressOverride = requestInfo["shippingAddressOverride"] as? [String:Any] {
-      let address = BTPostalAddress()
-      if let recipientName = shippingAddressOverride["recipientName"] as? String {
-        address.recipientName = recipientName
-      }
-      if let postalCode = shippingAddressOverride["postalCode"] as? String {
-        address.postalCode = postalCode
-      }
-      if let streetAddress = shippingAddressOverride["streetAddress"] as? String {
-        address.streetAddress = streetAddress
-      }
-      if let extendedAddress = shippingAddressOverride["extendedAddress"] as? String {
-        address.extendedAddress = extendedAddress
-      }
-      if let locality = shippingAddressOverride["locality"] as? String {
-        address.locality = locality
-      }
-      if let countryCodeAlpha2 = shippingAddressOverride["countryCodeAlpha2"] as? String {
-        address.countryCodeAlpha2 = countryCodeAlpha2
-      }
-      if let region = shippingAddressOverride["region"] as? String {
-        address.region = region
-      }
-      paypalRequest.shippingAddressOverride = address
-    }
-    if let riskCorrelationId = requestInfo["riskCorrelationId"] as? String {
-      paypalRequest.riskCorrelationID = riskCorrelationId
-    }
-    if let merchantAccountID = requestInfo["merchantAccountID"] as? String {
-      paypalRequest.merchantAccountID = merchantAccountID
-    }
-    
-    payPalNativeCheckoutClient.tokenizePayPalAccount(with: paypalRequest) { (nonce, error) in
-      guard error == nil else {
-        self.payPalNativeClient = nil
-        result([
-          "error": [
-            "message": String(describing: (error as? NSError)?.localizedDescription),
-            "code": String(describing: (error as? NSError)?.code),
-          ]
-        ])
-        return
-      }
-      self.payPalNativeClient = nil
-      result([
-        "data": FlutterBraintreePluginHelper.buildPaymentNativeNonceDict(nonce: nonce),
-      ])
-    }
-    payPalNativeClient = payPalNativeCheckoutClient
-  }
   
   private func tokenizePayPalAccount(_ call: FlutterMethodCall, apiClient: BTAPIClient, result: @escaping FlutterResult) {
     let driver = BTPayPalDriver(apiClient: apiClient)
@@ -337,6 +222,7 @@ public class FlutterBraintreePlugin: NSObject, FlutterPlugin {
     })
   }
   
+  
   private func deletePaymentMethodNonce(apiClient: BTAPIClient, nonce:String, result: @escaping FlutterResult) {
     
     let parameters = [
@@ -402,4 +288,5 @@ public class FlutterBraintreePlugin: NSObject, FlutterPlugin {
     }
   }
 }
+
 
