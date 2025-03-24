@@ -7,28 +7,17 @@ import 'postal_address.dart';
 class BTPayPalVaultRequest extends BTPayPalRequest {
   BTPayPalVaultRequest({
     this.offerCredit = false,
-    String? displayName,
-    bool shippingAddressRequired = false,
-    bool shippingAddressEditable = false,
-    BTPostalAddress? shippingAddressOverride,
-    String? localeCode,
-    BTPayPalRequestLandingPageType landingPageType = BTPayPalRequestLandingPageType.default_,
-    String? merchantAccountID,
-    List<BTPayPalLineItem>? lineItems,
-    String? billingAgreementDescription,
-    String? riskCorrelationId,
-  }): super(
-    displayName: displayName,
-    shippingAddressRequired: shippingAddressRequired,
-    shippingAddressEditable: shippingAddressEditable,
-    shippingAddressOverride: shippingAddressOverride,
-    localeCode: localeCode,
-    landingPageType: landingPageType,
-    merchantAccountID: merchantAccountID,
-    lineItems: lineItems,
-    billingAgreementDescription: billingAgreementDescription,
-    riskCorrelationId: riskCorrelationId,
-  );
+    super.displayName,
+    super.shippingAddressRequired,
+    super.shippingAddressEditable,
+    super.shippingAddressOverride,
+    super.localeCode,
+    super.landingPageType,
+    super.merchantAccountID,
+    super.lineItems,
+    super.billingAgreementDescription,
+    super.riskCorrelationId,
+  });
 
   /// Optional: Offers PayPal Credit if the customer qualifies. Defaults to false.
   final bool offerCredit;

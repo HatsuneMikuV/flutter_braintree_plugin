@@ -11,14 +11,10 @@ class BTVenmoAccountNonce extends BTPaymentMethodNonce {
     required this.username,
     required this.billingAddress,
     required this.shippingAddress,
-    required String nonce,
-    required String type,
-    required bool isDefault,
-  }) : super(
-    nonce: nonce,
-    type: type,
-    isDefault: isDefault,
-  );
+    required super.nonce,
+    required super.type,
+    required super.isDefault,
+  });
 
   /// Creates a new instance from a JSON object.
   factory BTVenmoAccountNonce.fromJson(dynamic source) {

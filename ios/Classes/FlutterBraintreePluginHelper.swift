@@ -19,24 +19,6 @@ class FlutterBraintreePluginHelper {
     return authorization
   }
 
-  class func buildPaymentNativeNonceDict(nonce: BTPayPalNativeCheckoutAccountNonce?) -> [String: Any?]? {
-    guard let nonce = nonce else { return nil }
-    var dict = [String: Any?]()
-    dict["nonce"] = nonce.nonce
-    dict["type"] = nonce.type
-    dict["isDefault"] = nonce.isDefault
-
-    dict["email"] = nonce.email
-    dict["firstName"] = nonce.firstName
-    dict["lastName"] = nonce.lastName
-    dict["phone"] = nonce.phone
-    dict["clientMetadataID"] = nonce.clientMetadataID
-    dict["payerID"] = nonce.payerID
-    dict["billingAddress"] = buildPostalAddressDict(address: nonce.billingAddress)
-    dict["shippingAddress"] = buildPostalAddressDict(address: nonce.shippingAddress)
-    return dict
-  }
-
   class func buildPaymentNonceDict(nonce: BTPaymentMethodNonce?) -> [String: Any?]? {
     guard let nonce = nonce else { return nil }
     var dict = [String: Any?]()

@@ -15,14 +15,10 @@ class BTPayPalAccountNonce extends BTPaymentMethodNonce {
     required this.clientMetadataID,
     required this.payerID,
     required this.creditFinancing,
-    required String nonce,
-    required String type,
-    required bool isDefault,
-  }) : super(
-    nonce: nonce,
-    type: type,
-    isDefault: isDefault,
-  );
+    required super.nonce,
+    required super.type,
+    required super.isDefault,
+  });
 
   /// Creates a new instance from a JSON object.
   factory BTPayPalAccountNonce.fromJson(dynamic source) {

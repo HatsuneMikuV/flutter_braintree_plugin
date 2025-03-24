@@ -9,8 +9,6 @@ public class FlutterBraintreePlugin: NSObject, FlutterPlugin {
     let instance = FlutterBraintreePlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
-  
-  var payPalNativeClient:BTPayPalNativeCheckoutClient?
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     guard let authorization = FlutterBraintreePluginHelper.getAuthorization(call: call) else {
