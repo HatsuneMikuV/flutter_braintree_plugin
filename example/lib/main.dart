@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> {
         ),
         body: CustomScrollView(
           slivers: <Widget>[
-             token.isNotEmpty ? SliverList(
+            token.isNotEmpty ? SliverList(
               delegate: SliverChildListDelegate(
                 <Widget>[
                   Container(
@@ -40,7 +40,7 @@ class _MyAppState extends State<MyApp> {
                       onPressed: () {
                         oneTimePayPalAccount();
                       },
-                    child: Text('Tokenize PayPal Account\n${oneTimePaymentResult?.email}'),
+                      child: Text('Tokenize OneTime PayPal Account\n${oneTimePaymentResult?.email}'),
                     ),
                   ),
                   Container(
@@ -48,7 +48,7 @@ class _MyAppState extends State<MyApp> {
                       onPressed: () {
                         vaultPayPalAccount();
                       },
-                      child: Text('Tokenize PayPal Account\n${vaultPaymentResult?.email}'),
+                      child: Text('Tokenize Vault PayPal Account\n${vaultPaymentResult?.email}'),
                     ),
                   ),
                   Container(
@@ -56,7 +56,7 @@ class _MyAppState extends State<MyApp> {
                       onPressed: () {
                         tokenizeVenmoAccount(false);
                       },
-                      child: Text('Tokenize Venmo Account\n${oneTimeVenmoPaymentResult?.username}'),
+                      child: Text('Tokenize OneTime Venmo Account\n${oneTimeVenmoPaymentResult?.username}'),
                     ),
                   ),
                   Container(
@@ -64,7 +64,7 @@ class _MyAppState extends State<MyApp> {
                       onPressed: () {
                         tokenizeVenmoAccount(true);
                       },
-                      child: Text('Tokenize Venmo Account\n${vaultVenmoPaymentResult?.username}'),
+                      child: Text('Tokenize Vault Venmo Account\n${vaultVenmoPaymentResult?.username}'),
                     ),
                   ),
                 ],
@@ -85,7 +85,7 @@ class _MyAppState extends State<MyApp> {
             ),
             if (paymentMethodNonces != null) SliverList(
               delegate: SliverChildBuilderDelegate(
-                (BuildContext context, int index) {
+                    (BuildContext context, int index) {
                   final item = paymentMethodNonces![index];
                   return ListTile(
                     onLongPress: () {
