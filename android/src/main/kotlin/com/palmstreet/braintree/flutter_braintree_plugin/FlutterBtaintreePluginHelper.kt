@@ -1,12 +1,10 @@
 
-package com.example.flutter_braintree_plugin
+package com.palmstreet.braintree.flutter_braintree_plugin
 
-import android.R
 import com.braintreepayments.api.PayPalAccountNonce
 import com.braintreepayments.api.PayPalCreditFinancing
 import com.braintreepayments.api.PayPalCreditFinancingAmount
 import com.braintreepayments.api.PayPalLineItem
-import com.braintreepayments.api.PayPalVaultRequest
 import com.braintreepayments.api.PostalAddress
 import com.braintreepayments.api.VenmoAccountNonce
 import com.braintreepayments.api.VenmoLineItem
