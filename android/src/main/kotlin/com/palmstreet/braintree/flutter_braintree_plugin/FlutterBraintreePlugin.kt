@@ -1,17 +1,20 @@
 package com.palmstreet.braintree.flutter_braintree_plugin
 
-import com.palmstreet.braintree.flutter_braintree_plugin.FlutterBraintreePluginHelper
+import android.annotation.SuppressLint
+import android.content.res.Resources
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
-import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
+import com.braintreepayments.api.ApiClient
+import com.braintreepayments.api.AuthorizationCallback
 import com.braintreepayments.api.BraintreeClient
+import com.braintreepayments.api.ClientToken
+import com.braintreepayments.api.GraphQLConstants
+import com.braintreepayments.api.GraphQLQueryHelper
+import com.braintreepayments.api.HttpResponseCallback
+import com.braintreepayments.api.MetadataBuilder
 import com.braintreepayments.api.PayPalAccountNonce
 import com.braintreepayments.api.PayPalCheckoutRequest
 import com.braintreepayments.api.PayPalClient
-import com.braintreepayments.api.PayPalLineItem
 import com.braintreepayments.api.PayPalListener
 import com.braintreepayments.api.PayPalPaymentIntent
 import com.braintreepayments.api.PayPalRequest
@@ -21,9 +24,14 @@ import com.braintreepayments.api.VenmoAccountNonce
 import com.braintreepayments.api.VenmoClient
 import com.braintreepayments.api.VenmoListener
 import com.braintreepayments.api.VenmoRequest
-
-import java.lang.Exception
-import java.util.ArrayList
+import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import io.flutter.plugin.common.MethodChannel.Result
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.IOException
 
 /** FlutterBraintreePlugin */
 class FlutterBraintreePlugin: FlutterPlugin, MethodCallHandler, AppCompatActivity(), PayPalListener, VenmoListener {
@@ -64,7 +72,7 @@ class FlutterBraintreePlugin: FlutterPlugin, MethodCallHandler, AppCompatActivit
       if (nonce == null) {
         result.success(mapOf(
           "error" to mapOf(
-            "code" to "-1",
+            "code" to -1,
             "message" to "Payment method does not exist"
           )
         ))
@@ -76,68 +84,136 @@ class FlutterBraintreePlugin: FlutterPlugin, MethodCallHandler, AppCompatActivit
     result.notImplemented()
   }
 
-  private fun deletePaymentMethodNonce(apiClient: BraintreeClient, nonce:String, result: Result) {
-//    val parameters = mapOf(
-//      "operationName" to "DeletePaymentMethodFromSingleUseToken",
-//      "query" to "mutation DeletePaymentMethodFromSingleUseToken($input: DeletePaymentMethodFromSingleUseTokenInput!) { deletePaymentMethodFromSingleUseToken(input: $input) { clientMutationId } }",
-//      "variables" to mapOf(
-//        "input" to mapOf( "singleUseTokenId" to nonce )
-//      )
-//    )
-//
-//    apiClient.post("", parameters, httpType: .graphQLAPI) { body, response, error in
-//      guard error == nil else {
-//        result(mapOf(
-//          "error" to mapOf(
-//            "code" to (error as? NSError)?.code.toString(),
-//            "message" to error?.localizedDescription ?: "No vaulted payment methods"
-//          )
-//        ))
-//        return
-//      }
-//      fetchPaymentMethodNonces(apiClient, true, result)
-//    }
+  @SuppressLint("RestrictedApi")
+  private fun deletePaymentMethodNonce(braintreeClient: BraintreeClient, nonce:String, result: Result) {
+    braintreeClient.getAuthorization(AuthorizationCallback { authorization, error ->
+      val usesClientToken = authorization is ClientToken
+
+      if (!usesClientToken) {
+        result.success(mapOf(
+          "error" to mapOf(
+            "code" to -1,
+            "message" to "A client token with a customer id must be used to delete a payment method nonce."
+          )
+        ))
+        return@AuthorizationCallback
+      }
+      if (error != null) {
+        result.success(mapOf(
+          "error" to mapOf(
+            "code" to error.hashCode(),
+            "message" to error.localizedMessage
+          )
+        ))
+        return@AuthorizationCallback
+      }
+      val base = JSONObject()
+      val variables = JSONObject()
+      val input = JSONObject()
+
+      try {
+        base.put(
+          "clientSdkMetadata", MetadataBuilder()
+            .sessionId(braintreeClient.sessionId)
+            .source("client")
+            .integration(braintreeClient.integrationType)
+            .build()
+        )
+        base.put(
+          GraphQLConstants.Keys.QUERY, GraphQLQueryHelper.getQuery(
+            this, R.raw.delete_payment_method_mutation
+          )
+        )
+        input.put("singleUseTokenId", nonce)
+        variables.put("input", input)
+        base.put("variables", variables)
+        base.put(
+          GraphQLConstants.Keys.OPERATION_NAME,
+          "DeletePaymentMethodFromSingleUseToken"
+        )
+      } catch (e: Resources.NotFoundException) {
+        result.success(mapOf(
+          "error" to mapOf(
+            "code" to -1,
+            "message" to "Unable to read GraphQL query"
+          )
+        ))
+        return@AuthorizationCallback
+      } catch (e: IOException) {
+        result.success(mapOf(
+          "error" to mapOf(
+            "code" to -1,
+            "message" to "Unable to read GraphQL query"
+          )
+        ))
+        return@AuthorizationCallback
+      } catch (e: JSONException) {
+        result.success(mapOf(
+          "error" to mapOf(
+            "code" to -1,
+            "message" to "Unable to read GraphQL query"
+          )
+        ))
+        return@AuthorizationCallback
+      }
+
+      braintreeClient.sendGraphQLPOST(
+        base,
+        HttpResponseCallback { responseBody, httpError ->
+          if (responseBody != null) {
+            braintreeClient.sendAnalyticsEvent("delete-payment-methods.succeeded")
+            fetchPaymentMethodNonces(braintreeClient, true, result)
+          } else {
+            val deletePaymentMethodError = java.lang.Exception(httpError)
+            result.success(mapOf(
+              "error" to mapOf(
+                "code" to deletePaymentMethodError.hashCode(),
+                "message" to deletePaymentMethodError.localizedMessage
+              )
+            ))
+            braintreeClient.sendAnalyticsEvent("delete-payment-methods.failed")
+          }
+        }
+      )
+    })
   }
 
+  @SuppressLint("RestrictedApi")
+  private fun fetchPaymentMethodNonces(braintreeClient: BraintreeClient, defaultFirst:Boolean, result: Result) {
+    val uri = Uri.parse(ApiClient.versionedPath(ApiClient.PAYMENT_METHOD_ENDPOINT))
+      .buildUpon()
+      .appendQueryParameter("default_first", defaultFirst.toString())
+      .appendQueryParameter("session_id", braintreeClient.sessionId)
+      .build()
 
-  private fun fetchPaymentMethodNonces(apiClient: BraintreeClient, defaultFirst:Boolean, result: Result) {
-//    apiClient.fetchOrReturnRemoteConfiguration { config, error in
-//      guard error == null else {
-//        result(mapOf(
-//          "error" to mapOf(
-//            "code" to (error as? NSError)?.code.toString(),
-//            "message" to error?.localizedDescription ?: "No vaulted payment methods"
-//          )
-//        ))
-//        return
-//      }
-//      apiClient.fetchPaymentMethodNonces(defaultFirst, completion: { methods, err in
-//        guard err == null else {
-//          result(mapOf(
-//            "error" to mapOf(
-//              "code" to (err as? NSError)?.code.toString(),
-//              "message" to err?.localizedDescription ?: "No vaulted payment methods"
-//            )
-//          ))
-//          return
-//        }
-//
-//        guard let methods = methods else {
-//          result(mapOf(
-//            "error" to mapOf(
-//              "code" to "-1",
-//              "message" to "No vaulted payment methods"
-//            )
-//          ))
-//          return
-//        }
-//        result(mapOf(
-//          "methods" to methods.map({ nonce in
-//                  return FlutterBraintreePluginHelper.buildPaymentNonceDict(nonce: nonce)
-//          }),
-//        ))
-//      })
-//    }
+    braintreeClient.sendGET(uri.toString(), HttpResponseCallback { responseBody, httpError ->
+      if (responseBody != null) {
+        try {
+          val paymentMethods = JSONObject(responseBody).getJSONArray("paymentMethods")
+          result.success(mapOf(
+            "methods" to paymentMethods
+          ))
+          braintreeClient.sendAnalyticsEvent("get-payment-methods.succeeded")
+        } catch (e: JSONException) {
+          result.success(mapOf(
+            "error" to mapOf(
+              "code" to e.hashCode(),
+              "message" to e.localizedMessage
+            )
+          ))
+          braintreeClient.sendAnalyticsEvent("get-payment-methods.failed")
+        }
+      } else {
+        val fetchPaymentMethodError = java.lang.Exception(httpError)
+        result.success(mapOf(
+          "error" to mapOf(
+            "code" to fetchPaymentMethodError.hashCode(),
+            "message" to fetchPaymentMethodError.localizedMessage
+          )
+        ))
+        braintreeClient.sendAnalyticsEvent("get-payment-methods.failed")
+      }
+    })
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
