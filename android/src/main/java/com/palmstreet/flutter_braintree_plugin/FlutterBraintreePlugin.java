@@ -20,14 +20,11 @@ import com.braintreepayments.api.GraphQLConstants;
 import com.braintreepayments.api.GraphQLQueryHelper;
 import com.braintreepayments.api.MetadataBuilder;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import io.flutter.Log;
@@ -155,7 +152,7 @@ public class FlutterBraintreePlugin implements FlutterPlugin, MethodCallHandler,
         if (!usesClientToken) {
           Exception clientTokenRequiredError =
                   new BraintreeException("A client token with a customer id must be used to delete a payment method nonce.");
-          onResultError(result, clientTokenRequiredError);
+          result.success(FlutterBraintreeTool.buildErrorMap(clientTokenRequiredError));
           return;
         }
 
@@ -179,7 +176,7 @@ public class FlutterBraintreePlugin implements FlutterPlugin, MethodCallHandler,
                   "DeletePaymentMethodFromSingleUseToken");
         } catch (Resources.NotFoundException | IOException | JSONException e) {
           Exception graphQLError = new BraintreeException("Unable to read GraphQL query");
-          onResultError(result, graphQLError);
+          result.success(FlutterBraintreeTool.buildErrorMap(graphQLError));
         }
 
         braintreeClient.sendGraphQLPOST(base, (responseBody, httpError) -> {
@@ -188,7 +185,7 @@ public class FlutterBraintreePlugin implements FlutterPlugin, MethodCallHandler,
             braintreeClient.sendAnalyticsEvent("delete-payment-methods.succeeded");
           } else {
             Exception deletePaymentMethodError = new Exception(httpError);
-            onResultError(result, deletePaymentMethodError);
+            result.success(FlutterBraintreeTool.buildErrorMap(deletePaymentMethodError));
             braintreeClient.sendAnalyticsEvent("delete-payment-methods.failed");
           }
         });
@@ -210,31 +207,19 @@ public class FlutterBraintreePlugin implements FlutterPlugin, MethodCallHandler,
       if (responseBody != null) {
         try {
           braintreeClient.sendAnalyticsEvent("get-payment-methods.succeeded");
-
-          JSONArray paymentMethods = new JSONObject(responseBody).getJSONArray("paymentMethods");
-          HashMap<String, Object> nonceMap = new HashMap<String, Object>();
-          nonceMap.put("methods", paymentMethods.toString());
-          Log.d("fetchPaymentMethodNonces", paymentMethods.toString());
+          HashMap<String, Object> nonceMap = FlutterBraintreeTool.buildFetchMethodsMap(responseBody);
+          Log.d("fetchPaymentMethodNonces", nonceMap.toString());
           result.success(nonceMap);
         } catch (JSONException e) {
-          onResultError(result, e);
+          result.success(FlutterBraintreeTool.buildErrorMap(e));
           braintreeClient.sendAnalyticsEvent("get-payment-methods.failed");
         }
       } else {
         Exception error = new Exception(httpError);
-        onResultError(result, error);
+        result.success(FlutterBraintreeTool.buildErrorMap(error));
         braintreeClient.sendAnalyticsEvent("get-payment-methods.failed");
       }
     });
-  }
-
-  private void onResultError(Result result, Exception error) {
-    HashMap<String, Object> errorMap = new HashMap<String, Object>();
-    errorMap.put("message", error.getLocalizedMessage());
-    errorMap.put("code", "-1");
-    HashMap<String, Object> nonceMap = new HashMap<String, Object>();
-    nonceMap.put("error", errorMap);
-    result.success(nonceMap);
   }
 
   @Override
