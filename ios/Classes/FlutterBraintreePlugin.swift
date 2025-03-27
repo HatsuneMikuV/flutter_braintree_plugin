@@ -241,7 +241,7 @@ public class FlutterBraintreePlugin: NSObject, FlutterPlugin {
         ])
         return
       }
-      self.fetchPaymentMethodNonces(apiClient: apiClient, defaultFirst: true, result: result)
+      result(true)
     }
   }
 

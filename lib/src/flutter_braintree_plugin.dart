@@ -51,7 +51,7 @@ class FlutterBraintree {
   /// Must be using client token with a customer ID specified.
   /// @param nonce The payment method nonce to delete
   /// @param completion Callback that returns an array of payment method nonces
-  static Future<List<BTPaymentMethodNonce>?> deletePaymentMethodNonce(
+  static Future<bool> deletePaymentMethodNonce(
       String authorization,
       String nonce,
       ) {

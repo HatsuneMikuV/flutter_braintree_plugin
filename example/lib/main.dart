@@ -240,8 +240,8 @@ class _MyAppState extends State<MyApp> {
       return;
     }
     try {
-      paymentMethodNonces = await FlutterBraintree.deletePaymentMethodNonce(token, nonce);
-      print("Payment Method Nonces: $paymentMethodNonces");
+      final suc = await FlutterBraintree.deletePaymentMethodNonce(token, nonce);
+      print("deletePaymentMethodNonce: $suc");
       setState(() {
 
       });

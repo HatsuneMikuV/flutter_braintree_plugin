@@ -103,7 +103,7 @@ class MethodChannelFlutterBraintreePlugin extends FlutterBraintreePluginPlatform
   /// @param nonce The payment method nonce to delete
   /// @param completion Callback that returns an array of payment method nonces
   @override
-  Future<List<BTPaymentMethodNonce>?> deletePaymentMethodNonce(
+  Future<bool> deletePaymentMethodNonce(
       String authorization,
       String nonce,
       ) async {
@@ -118,18 +118,8 @@ class MethodChannelFlutterBraintreePlugin extends FlutterBraintreePluginPlatform
           message: result['error']['message'],
         );
       }
-      final list = result['methods'];
-      List<BTPaymentMethodNonce> nonces = [];
-      if (list is List && list.isNotEmpty) {
-        for (var json in list) {
-          final item = BTPaymentMethodNonce.buildFromJson(json);
-          if (item != null) {
-            nonces.add(item);
-          }
-        }
-      }
-      return nonces;
+      return true;
     }
-    return null;
+    return false;
   }
 }

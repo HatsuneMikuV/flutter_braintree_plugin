@@ -48,7 +48,7 @@ abstract class FlutterBraintreePluginPlatform extends PlatformInterface {
     throw UnimplementedError('fetchPaymentMethodNonces() has not been implemented.');
   }
 
-  Future<List<BTPaymentMethodNonce>?> deletePaymentMethodNonce(
+  Future<bool> deletePaymentMethodNonce(
       String authorization,
       String nonce,
       ) {
