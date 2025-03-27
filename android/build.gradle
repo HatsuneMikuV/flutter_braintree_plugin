@@ -1,8 +1,7 @@
-group = "com.palmstreet.braintree.flutter_braintree_plugin"
-version = "1.0-SNAPSHOT"
+group = "com.palmstreet.flutter_braintree_plugin"
+version = "1.0"
 
 buildscript {
-    ext.kotlin_version = "1.8.0"
     repositories {
         google()
         mavenCentral()
@@ -10,11 +9,10 @@ buildscript {
 
     dependencies {
         classpath("com.android.tools.build:gradle:7.4.2")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
     }
 }
 
-allprojects {
+rootProject.allprojects {
     repositories {
         google()
         mavenCentral()
@@ -22,11 +20,10 @@ allprojects {
 }
 
 apply plugin: "com.android.library"
-apply plugin: "kotlin-android"
 
 android {
     if (project.android.hasProperty("namespace")) {
-        namespace = "com.palmstreet.braintree.flutter_braintree_plugin"
+        namespace = "com.palmstreet.flutter_braintree_plugin"
     }
 
     compileSdk = 34
@@ -36,34 +33,13 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
-    }
-
-    sourceSets {
-        main.java.srcDirs += "src/main/kotlin"
-        test.java.srcDirs += "src/test/kotlin"
-    }
-
     defaultConfig {
         minSdk = 21
     }
 
-    testOptions {
-        unitTests.all {
-            useJUnitPlatform()
-
-            testLogging {
-               events "passed", "skipped", "failed", "standardOut", "standardError"
-               outputs.upToDateWhen {false}
-               showStandardStreams = true
-            }
-        }
+    dependencies {
+        implementation 'com.braintreepayments.api:paypal:4.49.1'
+        implementation 'com.braintreepayments.api:venmo:4.49.1'
+        implementation 'androidx.appcompat:appcompat:1.6.1'
     }
-}
-
-dependencies {
-    implementation 'com.braintreepayments.api:paypal:4.49.1'
-    implementation 'com.braintreepayments.api:venmo:4.49.1'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
 }
