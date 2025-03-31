@@ -111,6 +111,9 @@ class MethodChannelFlutterBraintreePlugin extends FlutterBraintreePluginPlatform
       'payment_nonce': nonce,
       'authorization': authorization,
     });
+    if (result is bool) {
+      return result;
+    }
     if (result is Map && result.isNotEmpty) {
       if (result['error'] != null) {
         throw PlatformException(
@@ -118,7 +121,6 @@ class MethodChannelFlutterBraintreePlugin extends FlutterBraintreePluginPlatform
           message: result['error']['message'],
         );
       }
-      return true;
     }
     return false;
   }
