@@ -8,6 +8,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
 
 import com.braintreepayments.api.BraintreeClient;
 import com.braintreepayments.api.PayPalAccountNonce;
@@ -21,14 +22,14 @@ import com.braintreepayments.api.PostalAddress;
 import java.util.HashMap;
 
 
-public class FlutterBraintreePayPal extends AppCompatActivity implements PayPalListener {
+public class FlutterBraintreePayPal extends FragmentActivity implements PayPalListener {
 
     private BraintreeClient braintreeClient;
     private PayPalClient payPalClient;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
-        super.onCreate(savedInstanceState, persistentState);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_flutter_braintree_paypal);
         try {
             Intent intent = getIntent();

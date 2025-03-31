@@ -7,6 +7,7 @@ import android.os.PersistableBundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
 
 import com.braintreepayments.api.BraintreeClient;
 
@@ -18,15 +19,15 @@ import com.braintreepayments.api.VenmoRequest;
 
 import java.util.HashMap;
 
-public class FlutterBraintreeVenmo extends AppCompatActivity implements VenmoListener {
+public class FlutterBraintreeVenmo extends FragmentActivity implements VenmoListener {
 
 
     private BraintreeClient braintreeClient;
     private VenmoClient venmoClient;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
-        super.onCreate(savedInstanceState, persistentState);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_flutter_braintree_venmo);
         try {
             Intent intent = getIntent();
