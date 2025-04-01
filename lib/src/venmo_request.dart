@@ -17,6 +17,7 @@ class BTVenmoRequest {
     this.shippingAmount,
     this.taxAmount,
     this.lineItems,
+    this.fallbackToWeb = false,
   });
 
   /// The Venmo profile ID to be used during payment authorization. Customers will see the business name and logo associated with this Venmo profile, and it may show up in the Venmo app as a "Connected Merchant". Venmo profile IDs can be found in the Braintree Control Panel. Leaving this `nil` will use the default Venmo profile.
@@ -66,6 +67,10 @@ class BTVenmoRequest {
 
   /// Optional: The line items for this transaction. It can include up to 249 line items.
   final List<BTVenmoLineItem>? lineItems;
+  
+  /// only for android
+  /// Whether or not to fallback to the web flow if Venmo app is not installed.
+  final bool fallbackToWeb;
 
   /// Creates a new instance from a JSON object.
   Map<String, dynamic> toJson() {
@@ -82,6 +87,7 @@ class BTVenmoRequest {
       'shippingAmount': shippingAmount,
       'taxAmount': taxAmount,
       'lineItems': lineItems?.map((e) => e.toJson()).toList(),
+      'fallbackToWeb': fallbackToWeb,
     };
   }
 }

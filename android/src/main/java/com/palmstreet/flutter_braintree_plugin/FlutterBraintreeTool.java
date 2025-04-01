@@ -41,7 +41,7 @@ public class FlutterBraintreeTool {
 
     static public HashMap<String, Object> buildErrorMap(Exception error) {
         HashMap<String, Object> map = new HashMap<>();
-        map.put("code", error.getClass().getSimpleName());
+        map.put("code", "-1");
         map.put("message", error.getMessage());
         HashMap<String, Object> errorMap = new HashMap<>();
         errorMap.put("error", map);

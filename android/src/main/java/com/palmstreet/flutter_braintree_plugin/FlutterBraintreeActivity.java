@@ -3,15 +3,14 @@ package com.palmstreet.flutter_braintree_plugin;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 
 import com.braintreepayments.api.BraintreeClient;
+import com.braintreepayments.api.Configuration;
+import com.braintreepayments.api.ConfigurationCallback;
 import com.braintreepayments.api.PayPalAccountNonce;
 import com.braintreepayments.api.PayPalCheckoutRequest;
 import com.braintreepayments.api.PayPalClient;
@@ -20,18 +19,26 @@ import com.braintreepayments.api.PayPalPaymentIntent;
 import com.braintreepayments.api.PayPalRequest;
 import com.braintreepayments.api.PayPalVaultRequest;
 import com.braintreepayments.api.PostalAddress;
+import com.braintreepayments.api.VenmoAccountNonce;
+import com.braintreepayments.api.VenmoClient;
+import com.braintreepayments.api.VenmoListener;
+import com.braintreepayments.api.VenmoPaymentMethodUsage;
+import com.braintreepayments.api.VenmoRequest;
+
 import java.util.HashMap;
 
 
-public class FlutterBraintreePayPal extends FragmentActivity implements PayPalListener {
+public class FlutterBraintreeActivity extends FragmentActivity implements PayPalListener, VenmoListener {
 
     private BraintreeClient braintreeClient;
     private PayPalClient payPalClient;
+    private VenmoClient venmoClient;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_flutter_braintree_paypal);
+        setContentView(R.layout.activity_flutter_braintree);
         try {
             Intent intent = getIntent();
             braintreeClient = new BraintreeClient(
@@ -47,12 +54,59 @@ public class FlutterBraintreePayPal extends FragmentActivity implements PayPalLi
                     payPalClient.setListener(this);
                     tokenizePayPalAccount();
                     break;
+                case "tokenizeVenmoAccount":
+                    venmoClient = new VenmoClient(this, braintreeClient);
+                    venmoClient.setListener(this);
+                    tokenizeVenmoAccount();
+                    break;
                 default:
-                    onError(new Exception("Invalid request type: " + type));
+                    onError(new Exception("Invalid request type: " + type), "-1");
             }
         } catch (Exception e) {
-            onError(e);
+            onError(e, "-1");
         }
+    }
+
+    protected void tokenizeVenmoAccount() {
+        Intent intent = getIntent();
+
+        boolean shouldVault = intent.getBooleanExtra("vault", false);
+        int venmoPaymentMethodUsage = shouldVault ?
+                VenmoPaymentMethodUsage.MULTI_USE : VenmoPaymentMethodUsage.SINGLE_USE;
+        VenmoRequest venmoRequest = new VenmoRequest(venmoPaymentMethodUsage);
+        venmoRequest.setProfileId(intent.getStringExtra("profileID"));
+        venmoRequest.setShouldVault(shouldVault);
+        venmoRequest.setDisplayName(intent.getStringExtra("displayName"));
+        venmoRequest.setCollectCustomerBillingAddress(intent.getBooleanExtra("collectCustomerBillingAddress", false));
+        venmoRequest.setCollectCustomerShippingAddress(intent.getBooleanExtra("collectCustomerShippingAddress", false));
+        venmoRequest.setSubTotalAmount(intent.getStringExtra("subTotalAmount"));
+        venmoRequest.setTotalAmount(intent.getStringExtra("totalAmount"));
+        venmoRequest.setDiscountAmount(intent.getStringExtra("discountAmount"));
+        venmoRequest.setShippingAmount(intent.getStringExtra("shippingAmount"));
+        venmoRequest.setTaxAmount(intent.getStringExtra("taxAmount"));
+
+        boolean fallbackToWeb = intent.getBooleanExtra("fallbackToWeb", false);
+        braintreeClient.getConfiguration(new ConfigurationCallback() {
+            @Override
+            public void onResult(@Nullable Configuration configuration, @Nullable Exception e) {
+                if (e != null) {
+                    onError(e, "-1");
+                } else {
+                    if (fallbackToWeb) {
+                        venmoRequest.setFallbackToWeb(true);
+                        venmoClient.tokenizeVenmoAccount(FlutterBraintreeActivity.this, venmoRequest);
+                    } else {
+                        if (venmoClient.isVenmoAppSwitchAvailable(FlutterBraintreeActivity.this)) {
+                            venmoClient.tokenizeVenmoAccount(FlutterBraintreeActivity.this, venmoRequest);
+                        } else if (configuration.isVenmoEnabled()) {
+                            onError(new Exception("Please install the Venmo app first."), "VENMO_APP_NOT_INSTALLED");
+                        } else {
+                            onError(new Exception("Venmo is not enabled for the current merchant."), "-1");
+                        }
+                    }
+                }
+            }
+        });
     }
 
     protected void tokenizePayPalAccount() {
@@ -121,11 +175,11 @@ public class FlutterBraintreePayPal extends FragmentActivity implements PayPalLi
         payPalClient.tokenizePayPalAccount(this, paypalRequest);
     }
 
-    protected void onError(Exception e) {
+    protected void onError(Exception e, String code) {
         Intent result = new Intent();
         HashMap<String, Object> errorMap = new HashMap<String, Object>();
         errorMap.put("message", e.getLocalizedMessage());
-        errorMap.put("code", "-1");
+        errorMap.put("code", code);
         HashMap<String, Object> nonceMap = new HashMap<String, Object>();
         nonceMap.put("error", errorMap);
         result.putExtra("error", nonceMap);
@@ -166,6 +220,20 @@ public class FlutterBraintreePayPal extends FragmentActivity implements PayPalLi
 
     @Override
     public void onPayPalFailure(@NonNull Exception e) {
-        onError(e);
+        onError(e, "-1");
+    }
+
+
+
+    @Override
+    public void onVenmoSuccess(@NonNull VenmoAccountNonce venmoAccountNonce) {
+        HashMap<String, Object> nonceMap = new HashMap<String, Object>();
+        nonceMap.put("data", FlutterBraintreeTool.buildResultMap(venmoAccountNonce));
+        onSuccessResult(nonceMap);
+    }
+
+    @Override
+    public void onVenmoFailure(@NonNull Exception e) {
+        onError(e, "-1");
     }
 }

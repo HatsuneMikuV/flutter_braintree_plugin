@@ -51,10 +51,7 @@ public class FlutterBraintreePlugin implements FlutterPlugin, MethodCallHandler,
   private Result activeResult;
   private Context context;
 
-  private static final int PAYPAL_ACTIVITY_REQUEST_CODE = 0x420;
-
-  private static final int VENMO_ACTIVITY_REQUEST_CODE = 0x620;
-
+  private static final int ACTIVITY_REQUEST_CODE = 0x420;
 
   public static void registerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "flutter_braintree_plugin");
@@ -76,7 +73,7 @@ public class FlutterBraintreePlugin implements FlutterPlugin, MethodCallHandler,
     activeResult = result;
 
     if (call.method.equals("tokenizePayPalAccount")) {
-      Intent intent = new Intent(activity, FlutterBraintreePayPal.class);
+      Intent intent = new Intent(activity, FlutterBraintreeActivity.class);
       intent.putExtra("type", "tokenizePayPalAccount");
       intent.putExtra("authorization", (String) call.argument("authorization"));
       intent.putExtra("appLinkReturnUri", (String) call.argument("appLinkReturnUri"));
@@ -111,9 +108,9 @@ public class FlutterBraintreePlugin implements FlutterPlugin, MethodCallHandler,
       } else {
         intent.putExtra("shippingAddressOverride", false);
       }
-      activity.startActivityForResult(intent, PAYPAL_ACTIVITY_REQUEST_CODE);
+      activity.startActivityForResult(intent, ACTIVITY_REQUEST_CODE);
     } else if (call.method.equals("tokenizeVenmoAccount")) {
-      Intent intent = new Intent(activity, FlutterBraintreePayPal.class);
+      Intent intent = new Intent(activity, FlutterBraintreeActivity.class);
       intent.putExtra("type", "tokenizeVenmoAccount");
       intent.putExtra("authorization", (String) call.argument("authorization"));
       intent.putExtra("appLinkReturnUri", (String) call.argument("appLinkReturnUri"));
@@ -130,7 +127,8 @@ public class FlutterBraintreePlugin implements FlutterPlugin, MethodCallHandler,
       intent.putExtra("discountAmount", (String) request.get("discountAmount"));
       intent.putExtra("shippingAmount", (String) request.get("shippingAmount"));
       intent.putExtra("taxAmount", (String) request.get("taxAmount"));
-      activity.startActivityForResult(intent, VENMO_ACTIVITY_REQUEST_CODE);
+      intent.putExtra("fallbackToWeb", (Boolean) request.get("fallbackToWeb"));
+      activity.startActivityForResult(intent, ACTIVITY_REQUEST_CODE);
     } else if (call.method.equals("fetchPaymentMethodNonces")) {
       activeResult = null;
       fetchPaymentMethodNonces(call, result);
