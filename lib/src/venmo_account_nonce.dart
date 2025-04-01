@@ -28,7 +28,7 @@ class BTVenmoAccountNonce extends BTPaymentMethodNonce {
       billingAddress: source['billingAddress'] != null ? BTPostalAddress.fromJson(source['billingAddress']) : null,
       shippingAddress: source['shippingAddress'] != null ?  BTPostalAddress.fromJson(source['shippingAddress']) : null,
       nonce: source['nonce'],
-      type: source['type'],
+      type: source['type'] ?? 'Venmo',
       isDefault: source['isDefault'],
     );
   }

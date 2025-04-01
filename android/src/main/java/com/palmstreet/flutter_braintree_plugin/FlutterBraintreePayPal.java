@@ -38,7 +38,7 @@ public class FlutterBraintreePayPal extends FragmentActivity implements PayPalLi
                     this,
                     intent.getStringExtra("authorization"),
                     this.getPackageName() + ".braintree",
-                    Uri.parse("https://palmstreet.app")
+                    Uri.parse( intent.getStringExtra("appLinkReturnUri"))
             );
             String type = intent.getStringExtra("type");
             switch (type) {

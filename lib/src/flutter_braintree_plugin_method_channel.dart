@@ -26,10 +26,13 @@ class MethodChannelFlutterBraintreePlugin extends FlutterBraintreePluginPlatform
   Future<BTPayPalAccountNonce?> tokenizePayPalAccount(
       String authorization,
       BTPayPalRequest request,
+      //android only required
+      String? appLinkReturnUri
       ) async {
     final result = await methodChannel.invokeMethod('tokenizePayPalAccount', {
       'authorization': authorization,
       'request': request.toJson(),
+      'appLinkReturnUri': appLinkReturnUri,
     });
     if (result is Map && result.isNotEmpty) {
       if (result['error'] != null) {
@@ -47,10 +50,13 @@ class MethodChannelFlutterBraintreePlugin extends FlutterBraintreePluginPlatform
   Future<BTVenmoAccountNonce?> tokenizeVenmoAccount(
       String authorization,
       BTVenmoRequest request,
+      //android only required
+      String? appLinkReturnUri
       ) async {
     final result = await methodChannel.invokeMethod('tokenizeVenmoAccount', {
       'authorization': authorization,
       'request': request.toJson(),
+      'appLinkReturnUri': appLinkReturnUri,
     });
     if (result is Map && result.isNotEmpty) {
       if (result['error'] != null) {

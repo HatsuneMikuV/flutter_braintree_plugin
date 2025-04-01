@@ -53,7 +53,7 @@ public class FlutterBraintreeTool {
         map.put("nonce", nonce.getString());
         map.put("isDefault", nonce.isDefault());
         if (nonce instanceof PayPalAccountNonce) {
-            map.put("typeLabel", "PayPal");
+            map.put("type", "PayPal");
             PayPalAccountNonce paypalNonce = (PayPalAccountNonce) nonce;
             map.put("email", paypalNonce.getEmail());
             map.put("firstName", paypalNonce.getFirstName());
@@ -66,7 +66,7 @@ public class FlutterBraintreeTool {
             map.put("creditFinancing", buildPayPalCreditFinancingDict(paypalNonce.getCreditFinancing()));
         }
         if (nonce instanceof VenmoAccountNonce) {
-            map.put("typeLabel", "Venmo");
+            map.put("type", "Venmo");
             VenmoAccountNonce venmoNonce = (VenmoAccountNonce) nonce;
             map.put("email", venmoNonce.getEmail());
             map.put("externalId", venmoNonce.getExternalId());

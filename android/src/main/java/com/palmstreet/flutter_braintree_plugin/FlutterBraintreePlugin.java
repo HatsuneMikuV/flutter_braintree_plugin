@@ -79,6 +79,7 @@ public class FlutterBraintreePlugin implements FlutterPlugin, MethodCallHandler,
       Intent intent = new Intent(activity, FlutterBraintreePayPal.class);
       intent.putExtra("type", "tokenizePayPalAccount");
       intent.putExtra("authorization", (String) call.argument("authorization"));
+      intent.putExtra("appLinkReturnUri", (String) call.argument("appLinkReturnUri"));
       assert(call.argument("request") instanceof Map);
       Map request = (Map) call.argument("request");
       intent.putExtra("vault", (Boolean) request.get("vault"));
@@ -115,6 +116,7 @@ public class FlutterBraintreePlugin implements FlutterPlugin, MethodCallHandler,
       Intent intent = new Intent(activity, FlutterBraintreePayPal.class);
       intent.putExtra("type", "tokenizeVenmoAccount");
       intent.putExtra("authorization", (String) call.argument("authorization"));
+      intent.putExtra("appLinkReturnUri", (String) call.argument("appLinkReturnUri"));
       assert(call.argument("request") instanceof Map);
       Map request = (Map) call.argument("request");
       intent.putExtra("paymentMethodUsage", (Integer) request.get("paymentMethodUsage"));

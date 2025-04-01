@@ -31,6 +31,8 @@ abstract class FlutterBraintreePluginPlatform extends PlatformInterface {
   Future<BTPayPalAccountNonce?> tokenizePayPalAccount(
       String authorization,
       BTPayPalRequest request,
+      //android only required
+      String? appLinkReturnUri
       ) {
     throw UnimplementedError('tokenizePayPalAccount() has not been implemented.');
   }
@@ -38,6 +40,8 @@ abstract class FlutterBraintreePluginPlatform extends PlatformInterface {
   Future<BTVenmoAccountNonce?> tokenizeVenmoAccount(
       String authorization,
       BTVenmoRequest request,
+      //android only required
+      String? appLinkReturnUri
       ) {
     throw UnimplementedError('tokenizeVenmoAccount() has not been implemented.');
   }

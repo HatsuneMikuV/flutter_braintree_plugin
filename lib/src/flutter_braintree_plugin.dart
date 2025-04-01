@@ -21,8 +21,14 @@ class FlutterBraintree {
   static Future<BTPayPalAccountNonce?> tokenizePayPalAccount(
       String authorization,
       BTPayPalRequest request,
+      //android only required
+      String? appLinkReturnUri
       ) {
-    return FlutterBraintreePluginPlatform.instance.tokenizePayPalAccount(authorization, request);
+    return FlutterBraintreePluginPlatform.instance.tokenizePayPalAccount(
+      authorization,
+      request,
+      appLinkReturnUri,
+    );
   }
 
   /// Initiates Venmo login via app switch, which returns a BTVenmoAccountNonce when successful.
@@ -33,8 +39,14 @@ class FlutterBraintree {
   static Future<BTVenmoAccountNonce?> tokenizeVenmoAccount(
       String authorization,
       BTVenmoRequest request,
+      //android only required
+      String? appLinkReturnUri
       ) {
-    return FlutterBraintreePluginPlatform.instance.tokenizeVenmoAccount(authorization, request);
+    return FlutterBraintreePluginPlatform.instance.tokenizeVenmoAccount(
+      authorization,
+      request,
+      appLinkReturnUri,
+    );
   }
 
   /// Fetches a customer's vaulted payment method nonces.
