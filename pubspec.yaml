@@ -1,6 +1,6 @@
 name: flutter_braintree_plugin
 description: "A new Flutter project."
-version: 1.0.0
+version: 1.0.3
 homepage: https://github.com/HatsuneMikuV/flutter_braintree_plugin.git
 
 environment:
