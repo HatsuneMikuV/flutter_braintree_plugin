@@ -1,6 +1,7 @@
 package com.palmstreet.flutter_braintree_plugin;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.util.Log;
@@ -33,7 +34,12 @@ public class FlutterBraintreePayPal extends FragmentActivity implements PayPalLi
         setContentView(R.layout.activity_flutter_braintree_paypal);
         try {
             Intent intent = getIntent();
-            braintreeClient = new BraintreeClient(this, intent.getStringExtra("authorization"));
+            braintreeClient = new BraintreeClient(
+                    this,
+                    intent.getStringExtra("authorization"),
+                    this.getPackageName() + ".braintree",
+                    Uri.parse("https://palmstreet.app")
+            );
             String type = intent.getStringExtra("type");
             switch (type) {
                 case "tokenizePayPalAccount":

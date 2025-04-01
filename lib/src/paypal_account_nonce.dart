@@ -33,7 +33,7 @@ class BTPayPalAccountNonce extends BTPaymentMethodNonce {
       payerID: source['payerID'],
       creditFinancing: source['creditFinancing'] != null ? BTPayPalCreditFinancing.fromJson(source['creditFinancing']) : null,
       nonce: source['nonce'],
-      type: source['type'],
+      type: source['type'] ?? source['typeLabel'] ?? '',
       isDefault: source['isDefault'],
     );
   }
