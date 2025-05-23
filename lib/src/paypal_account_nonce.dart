@@ -70,6 +70,7 @@ class BTPayPalAccountNonce extends BTPaymentMethodNonce {
   final BTPayPalCreditFinancing? creditFinancing;
 
   /// Converts this request object into a JSON-encodable format.
+  @override
   Map<String, dynamic> toJson() {
     return {
       'email': email,

@@ -26,37 +26,7 @@ class BTPayPalRequest {
   final bool shippingAddressEditable;
 
   /// Optional: A locale code to use for the transaction.
-  ///
-  /// Supported locales are:
-  ///
-  /// `da_DK`,
-  /// `de_DE`,
-  /// `en_AU`,
-  /// `en_GB`,
-  /// `en_US`,
-  /// `es_ES`,
-  /// `es_XC`,
-  /// `fr_CA`,
-  /// `fr_FR`,
-  /// `fr_XC`,
-  /// `id_ID`,
-  /// `it_IT`,
-  /// `ja_JP`,
-  /// `ko_KR`,
-  /// `nl_NL`,
-  /// `no_NO`,
-  /// `pl_PL`,
-  /// `pt_BR`,
-  /// `pt_PT`,
-  /// `ru_RU`,
-  /// `sv_SE`,
-  /// `th_TH`,
-  /// `tr_TR`,
-  /// `zh_CN`,
-  /// `zh_HK`,
-  /// `zh_TW`,
-  /// `zh_XC`.
-  final String? localeCode;
+  final BTPayPalLocaleCode? localeCode;
 
   /// Optional: A valid shipping address to be displayed in the transaction flow. An error will occur if this address is not valid.
   final BTPostalAddress? shippingAddressOverride;
@@ -86,12 +56,12 @@ class BTPayPalRequest {
   Map<String, dynamic> toJson() => {
     'shippingAddressRequired': shippingAddressRequired,
     'shippingAddressEditable': shippingAddressEditable,
-    'localeCode': localeCode,
-    'shippingAddressOverride': shippingAddressOverride?.toJson(),
+    if (localeCode != null) 'localeCode': localeCode?.index,
+    if (shippingAddressOverride != null) 'shippingAddressOverride': shippingAddressOverride?.toJson(),
     'landingPageType': landingPageType.index,
     'displayName': displayName,
     'merchantAccountID': merchantAccountID,
-    'lineItems': lineItems?.map((e) => e.toJson()).toList(),
+    if (lineItems != null) 'lineItems': lineItems?.map((e) => e.toJson()).toList(),
     'billingAgreementDescription': billingAgreementDescription,
     'riskCorrelationId': riskCorrelationId,
   };

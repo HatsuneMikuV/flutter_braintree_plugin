@@ -157,7 +157,11 @@ class _MyAppState extends State<MyApp> {
     );
 
     try {
-      oneTimePaymentResult = await FlutterBraintree.tokenizePayPalAccount(token, request);
+      oneTimePaymentResult = await FlutterBraintree.tokenizePayPalAccount(
+        token,
+        request,
+        'https://example.com',
+      );
       setState(() {});
     } catch (e) {
       print("Error: $e");
@@ -187,7 +191,11 @@ class _MyAppState extends State<MyApp> {
     );
 
     try {
-      vaultPaymentResult = await FlutterBraintree.tokenizePayPalAccount(token, request);
+      vaultPaymentResult = await FlutterBraintree.tokenizePayPalAccount(
+        token,
+        request,
+        'https://example.com',
+      );
       setState(() {});
     } catch (e) {
       print("Error: $e");
@@ -207,9 +215,17 @@ class _MyAppState extends State<MyApp> {
     );
     try {
       if (vault) {
-        vaultVenmoPaymentResult = await FlutterBraintree.tokenizeVenmoAccount(token, request);
+        vaultVenmoPaymentResult = await FlutterBraintree.tokenizeVenmoAccount(
+          token,
+          request,
+          'https://example.com',
+        );
       } else {
-        oneTimeVenmoPaymentResult = await FlutterBraintree.tokenizeVenmoAccount(token, request);
+        oneTimeVenmoPaymentResult = await FlutterBraintree.tokenizeVenmoAccount(
+          token,
+          request,
+          'https://example.com',
+        );
       }
       setState(() {});
     } catch (e) {

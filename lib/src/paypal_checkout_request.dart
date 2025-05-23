@@ -48,6 +48,7 @@ class BTPayPalCheckoutRequest extends BTPayPalRequest {
   final bool requestBillingAgreement;
 
   /// Converts this request object into a JSON-encodable format.
+  @override
   Map<String, dynamic> toJson() {
     return {
       'amount': amount,

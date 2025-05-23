@@ -15,8 +15,8 @@ A new Flutter project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'Braintree/PayPal', '5.27.0'
-  s.dependency 'Braintree/Venmo', '5.27.0'
+  s.dependency 'Braintree/PayPal', '6.33.0'
+  s.dependency 'Braintree/Venmo', '6.33.0'
   s.platform = :ios, '13.0'
 
   # Flutter.framework does not contain a i386 slice.

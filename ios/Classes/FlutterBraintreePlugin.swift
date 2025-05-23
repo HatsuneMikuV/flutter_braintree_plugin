@@ -47,7 +47,6 @@ public class FlutterBraintreePlugin: NSObject, FlutterPlugin {
   
   
   private func tokenizePayPalAccount(_ call: FlutterMethodCall, apiClient: BTAPIClient, result: @escaping FlutterResult) {
-    let driver = BTPayPalDriver(apiClient: apiClient)
     
     guard let requestInfo = FlutterBraintreePluginHelper.dict(for: "request", in: call) else {
       FlutterBraintreePluginHelper.returnFlutterError(result: result, code: "-1", message: "Missing request parameters")
@@ -83,9 +82,9 @@ public class FlutterBraintreePlugin: NSObject, FlutterPlugin {
       if let userAction = requestInfo["userAction"] as? Int {
         switch userAction {
         case 1:
-          paypalCheckoutRequest.userAction = BTPayPalRequestUserAction.commit
+          paypalCheckoutRequest.userAction = BTPayPalRequestUserAction.payNow
         default:
-          paypalCheckoutRequest.userAction = BTPayPalRequestUserAction.default
+          paypalCheckoutRequest.userAction = BTPayPalRequestUserAction.none
         }
       }
       if let requestBillingAgreement = requestInfo["requestBillingAgreement"] as? Bool {
@@ -132,14 +131,14 @@ public class FlutterBraintreePlugin: NSObject, FlutterPlugin {
     if let shippingAddressEditable = requestInfo["shippingAddressEditable"] as? Bool {
       paypalRequest.isShippingAddressEditable = shippingAddressEditable
     }
-    if let localeCode = requestInfo["localeCode"] as? String {
-      paypalRequest.localeCode = localeCode
+    if let localeCode = requestInfo["localeCode"] as? Int {
+      paypalRequest.localeCode = BTPayPalLocaleCode(rawValue: localeCode) ?? .none
     }
     if let merchantAccountID = requestInfo["merchantAccountID"] as? String {
       paypalRequest.merchantAccountID = merchantAccountID
     }
     if let riskCorrelationId = requestInfo["riskCorrelationId"] as? String {
-      paypalRequest.riskCorrelationId = riskCorrelationId
+      paypalRequest.riskCorrelationID = riskCorrelationId
     }
     if let landingPageType = requestInfo["landingPageType"] as? Int {
       switch landingPageType {
@@ -148,7 +147,7 @@ public class FlutterBraintreePlugin: NSObject, FlutterPlugin {
       case 2:
         paypalRequest.landingPageType = BTPayPalRequestLandingPageType.billing
       default:
-        paypalRequest.landingPageType = BTPayPalRequestLandingPageType.default
+        paypalRequest.landingPageType = BTPayPalRequestLandingPageType.none
       }
     }
     
@@ -156,39 +155,60 @@ public class FlutterBraintreePlugin: NSObject, FlutterPlugin {
       paypalRequest.lineItems = FlutterBraintreePluginHelper.makePayPalItems(from: lineItems)
     }
     
-    driver.tokenizePayPalAccount(with: paypalRequest) { (nonce, error) in
-      guard error == nil else {
+    let payPalClient = BTPayPalClient(apiClient: apiClient)
+    
+    if vault {
+      payPalClient.tokenize(paypalRequest as! BTPayPalVaultRequest) { nonce, err in
+        guard err == nil else {
+          result([
+            "error": [
+              "message": String(describing: (err as? NSError)?.localizedDescription),
+              "code": String(describing: (err as? NSError)?.code),
+            ]
+          ])
+          return
+        }
         result([
-          "error": [
-            "message": String(describing: (error as? NSError)?.localizedDescription),
-            "code": String(describing: (error as? NSError)?.code),
-          ]
+          "data": FlutterBraintreePluginHelper.buildPaymentNonceDict(nonce: nonce),
         ])
-        return
       }
-      result([
-        "data": FlutterBraintreePluginHelper.buildPaymentNonceDict(nonce: nonce),
-      ])
+    } else {
+      payPalClient.tokenize(paypalRequest as! BTPayPalCheckoutRequest) { nonce, err in
+        guard err == nil else {
+          result([
+            "error": [
+              "message": String(describing: (err as? NSError)?.localizedDescription),
+              "code": String(describing: (err as? NSError)?.code),
+            ]
+          ])
+          return
+        }
+        result([
+          "data": FlutterBraintreePluginHelper.buildPaymentNonceDict(nonce: nonce),
+        ])
+      }
     }
   }
   
   
   private func tokenizeVenmoAccount(_ call: FlutterMethodCall, apiClient: BTAPIClient, result: @escaping FlutterResult) {
-    let driver = BTVenmoDriver(apiClient: apiClient)
     
     guard let venmoInfo = FlutterBraintreePluginHelper.dict(for: "request", in: call) else {
       FlutterBraintreePluginHelper.returnFlutterError(result: result, code: "-1", message: "Missing request parameters")
       return
     }
     
-    let venmoRequest = BTVenmoRequest()
+    var paymentMethod = BTVenmoPaymentMethodUsage.multiUse
+    if let paymentMethodUsage = venmoInfo["paymentMethodUsage"] as? Int {
+      paymentMethod = BTVenmoPaymentMethodUsage(rawValue: paymentMethodUsage) ?? .multiUse
+    }
+    
+    let venmoRequest = BTVenmoRequest(paymentMethodUsage: paymentMethod)
     venmoRequest.profileID = venmoInfo["profileID"] as? String
     if let vault = venmoInfo["vault"] as? Bool {
       venmoRequest.vault = vault
     }
-    if let paymentMethodUsage = venmoInfo["paymentMethodUsage"] as? Int {
-      venmoRequest.paymentMethodUsage = BTVenmoPaymentMethodUsage(rawValue: paymentMethodUsage) ?? .unspecified
-    }
+    
     venmoRequest.displayName = venmoInfo["displayName"] as? String
     if let collectCustomerBillingAddress = venmoInfo["collectCustomerBillingAddress"] as? Bool {
       venmoRequest.collectCustomerBillingAddress = collectCustomerBillingAddress
@@ -204,7 +224,10 @@ public class FlutterBraintreePlugin: NSObject, FlutterPlugin {
     if let lineItems = venmoInfo["lineItems"] as? [Any] {
       venmoRequest.lineItems = FlutterBraintreePluginHelper.makeVenmoItems(from: lineItems)
     }
-    driver.tokenizeVenmoAccount(with: venmoRequest, completion: { nonce, error in
+    
+    let venmoClient = BTVenmoClient(apiClient: apiClient)
+    
+    venmoClient.tokenize(venmoRequest, completion: { nonce, error in
       guard error == nil else {
         result([
           "error": [

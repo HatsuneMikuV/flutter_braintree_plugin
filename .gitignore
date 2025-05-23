@@ -25,3 +25,13 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+android/gradlew
+android/gradlew.bat
+android/.idea/.name
+android/.idea/compiler.xml
+android/.idea/gradle.xml
+android/.idea/migrations.xml
+android/.idea/misc.xml
+android/.idea/vcs.xml
+android/gradle/wrapper/gradle-wrapper.jar
+android/gradle/wrapper/gradle-wrapper.properties

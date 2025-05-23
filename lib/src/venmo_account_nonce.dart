@@ -58,6 +58,7 @@ class BTVenmoAccountNonce extends BTPaymentMethodNonce {
   final BTPostalAddress? shippingAddress;
 
   /// Converts this request object into a JSON-encodable format.
+  @override
   Map<String, dynamic> toJson() {
     return {
       'email': email,

@@ -23,6 +23,7 @@ class BTPayPalVaultRequest extends BTPayPalRequest {
   final bool offerCredit;
 
   /// Converts this request object into a JSON-encodable format.
+  @override
   Map<String, dynamic> toJson() {
     return {
       'offerCredit': offerCredit,
