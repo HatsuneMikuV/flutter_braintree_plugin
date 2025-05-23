@@ -39,7 +39,7 @@ class FlutterBraintreePluginHelper {
     }
     if let venmoNonce = nonce as? BTVenmoAccountNonce {
       dict["email"] = venmoNonce.email
-      dict["externalId"] = venmoNonce.externalId
+      dict["externalId"] = venmoNonce.externalID
       dict["firstName"] = venmoNonce.firstName
       dict["lastName"] = venmoNonce.lastName
       dict["phoneNumber"] = venmoNonce.phoneNumber
@@ -105,7 +105,7 @@ class FlutterBraintreePluginHelper {
       guard let venmoKind = BTVenmoLineItemKind.init(rawValue: kind) else {
         return nil;
       }
-      let item = BTVenmoLineItem(quantity: NSNumber(integerLiteral: quantity), unitAmount: unitAmount, name: name, kind: venmoKind)
+      let item = BTVenmoLineItem(quantity: quantity, unitAmount: unitAmount, name: name, kind: venmoKind)
 
       item.unitTaxAmount = venmoItem["unitTaxAmount"] as? String
       item.itemDescription = venmoItem["itemDescription"] as? String
@@ -143,14 +143,6 @@ class FlutterBraintreePluginHelper {
         return nil;
       }
       let item = BTPayPalLineItem(quantity: "\(quantity)", unitAmount: unitAmount, name: name, kind: paypalKind)
-
-      item.unitTaxAmount = paypalItem["unitTaxAmount"] as? String
-      item.itemDescription = paypalItem["itemDescription"] as? String
-      item.productCode = paypalItem["productCode"] as? String
-      if let urlStr = paypalItem["url"] as? String, let url = URL.init(string: urlStr) {
-        item.url = url
-      }
-
       outList.append(item);
     }
 

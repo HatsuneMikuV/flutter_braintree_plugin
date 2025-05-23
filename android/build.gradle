@@ -38,8 +38,8 @@ android {
     }
 
     dependencies {
-        implementation 'com.braintreepayments.api:paypal:4.49.1'
-        implementation 'com.braintreepayments.api:venmo:4.49.1'
+        implementation 'com.braintreepayments.api:paypal:5.10.0'
+        implementation 'com.braintreepayments.api:venmo:5.10.0'
         implementation 'androidx.appcompat:appcompat:1.6.1'
     }
 }
