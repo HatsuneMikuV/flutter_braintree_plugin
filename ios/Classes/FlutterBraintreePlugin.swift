@@ -209,6 +209,10 @@ public class FlutterBraintreePlugin: NSObject, FlutterPlugin {
       venmoRequest.vault = vault
     }
     
+    if let fallbackToWeb = venmoInfo["fallbackToWeb"] as? Bool {
+      venmoRequest.fallbackToWeb = fallbackToWeb
+    }
+    
     venmoRequest.displayName = venmoInfo["displayName"] as? String
     if let collectCustomerBillingAddress = venmoInfo["collectCustomerBillingAddress"] as? Bool {
       venmoRequest.collectCustomerBillingAddress = collectCustomerBillingAddress
