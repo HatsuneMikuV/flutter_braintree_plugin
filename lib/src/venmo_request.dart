@@ -7,10 +7,11 @@ class BTVenmoRequest {
   BTVenmoRequest({
     this.profileID,
     this.vault = false,
-    this.paymentMethodUsage = BTVenmoPaymentMethodUsage.unspecified,
+    this.paymentMethodUsage = BTVenmoPaymentMethodUsage.singleUse,
     this.displayName,
     this.collectCustomerBillingAddress = false,
     this.collectCustomerShippingAddress = false,
+    this.isFinalAmount = false,
     this.subTotalAmount,
     this.totalAmount,
     this.discountAmount,
@@ -50,6 +51,11 @@ class BTVenmoRequest {
   /// Defaults to false
   final bool collectCustomerShippingAddress;
 
+  /// Indicates whether the purchase amount is the final amount.
+  /// Removes "subject to change" notice in Venmo app paysheet UI.
+  /// Defaults to `false`
+  final bool isFinalAmount;
+
   /// Optional: The subtotal amount of the transaction to be displayed on the paysheet. Excludes taxes, discounts, and shipping amounts.
   final String? subTotalAmount;
 
@@ -77,6 +83,7 @@ class BTVenmoRequest {
     return {
       'profileID': profileID,
       'vault': vault,
+      'isFinalAmount': isFinalAmount,
       'paymentMethodUsage': paymentMethodUsage.index,
       'displayName': displayName,
       'collectCustomerBillingAddress': collectCustomerBillingAddress,

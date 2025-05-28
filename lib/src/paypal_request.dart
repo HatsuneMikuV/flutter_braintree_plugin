@@ -9,7 +9,7 @@ class BTPayPalRequest {
     this.shippingAddressEditable = false,
     this.localeCode,
     this.shippingAddressOverride,
-    this.landingPageType = BTPayPalRequestLandingPageType.default_,
+    this.landingPageType = BTPayPalRequestLandingPageType.none,
     this.displayName,
     this.merchantAccountID,
     this.lineItems,

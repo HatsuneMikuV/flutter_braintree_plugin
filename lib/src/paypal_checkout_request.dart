@@ -10,7 +10,7 @@ class BTPayPalCheckoutRequest extends BTPayPalRequest {
     required this.amount,
     this.currencyCode,
     this.intent = BTPayPalRequestIntent.authorize,
-    this.userAction = BTPayPalRequestUserAction.default_,
+    this.userAction = BTPayPalRequestUserAction.none,
     this.offerPayLater = false,
     this.requestBillingAgreement = false,
     super.displayName,

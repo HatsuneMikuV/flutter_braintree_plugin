@@ -208,6 +208,9 @@ public class FlutterBraintreePlugin: NSObject, FlutterPlugin {
     if let vault = venmoInfo["vault"] as? Bool {
       venmoRequest.vault = vault
     }
+    if let isFinalAmount = venmoInfo["isFinalAmount"] as? Bool {
+      venmoRequest.isFinalAmount = isFinalAmount
+    }
     
     if let fallbackToWeb = venmoInfo["fallbackToWeb"] as? Bool {
       venmoRequest.fallbackToWeb = fallbackToWeb

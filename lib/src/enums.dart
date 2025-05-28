@@ -14,8 +14,8 @@ enum BTPayPalRequestIntent {
 ///  the user that billing will take place immediately.
 
 enum BTPayPalRequestUserAction {
-  default_,
-  commit,
+  none,
+  payNow,
 }
 
 /// The type of landing page to display when a user lands on the PayPal site to complete the payment.
@@ -42,7 +42,7 @@ enum BTPayPalPaymentType {
 /// The type of landing page to display when a user lands on the PayPal site to complete the payment.
 enum BTPayPalRequestLandingPageType {
   /// Default
-  default_,
+  none,
 
   /// Login
   login,
@@ -54,9 +54,6 @@ enum BTPayPalRequestLandingPageType {
 
 /// A BTVenmoRequest specifies options that contribute to the Venmo flow
 enum BTVenmoPaymentMethodUsage {
-
-  /// Unspecified
-  unspecified,
 
   /// Multi-use
   multiUse,
