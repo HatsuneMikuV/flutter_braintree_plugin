@@ -197,17 +197,12 @@ public class FlutterBraintreePlugin: NSObject, FlutterPlugin {
       FlutterBraintreePluginHelper.returnFlutterError(result: result, code: "-1", message: "Missing request parameters")
       return
     }
-    
-    var paymentMethod = BTVenmoPaymentMethodUsage.multiUse
-    if let paymentMethodUsage = venmoInfo["paymentMethodUsage"] as? Int {
-      paymentMethod = BTVenmoPaymentMethodUsage(rawValue: paymentMethodUsage) ?? .multiUse
-    }
-    
-    let venmoRequest = BTVenmoRequest(paymentMethodUsage: paymentMethod)
+    let vault = venmoInfo["vault"] as? Bool ?? false
+    let paymentMethodUsage = vault ? BTVenmoPaymentMethodUsage.multiUse : BTVenmoPaymentMethodUsage.singleUse
+    let venmoRequest = BTVenmoRequest(paymentMethodUsage: paymentMethodUsage)
+    venmoRequest.vault = vault
     venmoRequest.profileID = venmoInfo["profileID"] as? String
-    if let vault = venmoInfo["vault"] as? Bool {
-      venmoRequest.vault = vault
-    }
+    
     if let isFinalAmount = venmoInfo["isFinalAmount"] as? Bool {
       venmoRequest.isFinalAmount = isFinalAmount
     }
